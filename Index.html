@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>
+<title>Revolución Molecular Disipada</title>
+<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montagu+Slab:opsz,wght@16..144,400;16..144,700&display=swap" rel="stylesheet"/>
+<style>
+@font-face{font-family:'Cozette';src:url('./assets/CozetteVector.ttf') format('truetype');}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#0C0C0C}
+
+#intro{
+  position:fixed;inset:0;z-index:9000;
+  display:flex;flex-direction:column;
+  background:#F0E530;
+  overflow:hidden;
+}
+
+/* CABECERA */
+.cab{
+  background:#0C0C0C;
+  padding:10px 10px 8px;
+  flex-shrink:0;
+  position:relative;
+}
+.cab::after{
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,255,255,0.015) 2px,rgba(255,255,255,0.015) 3px);
+  pointer-events:none;
+}
+
+.orn-top{
+  display:block;text-align:center;
+  font-family:'Montagu Slab',serif;font-size:10px;font-weight:400;
+  color:#F0E530;letter-spacing:0.22em;text-transform:uppercase;
+  margin-bottom:8px;opacity:0.75;
+  position:relative;z-index:1;
+}
+
+/* Cada línea ocupa TODO el ancho — font-size se ajusta via JS */
+.titulo-linea{
+  display:block;
+  font-family:'Montagu Slab',serif;font-weight:700;
+  text-transform:uppercase;
+  white-space:nowrap;
+  line-height:0.88;
+  position:relative;z-index:1;
+  width:100%;
+  text-align:center;
+}
+.l-revo   {color:#CC0018; text-shadow:4px 4px 0 #F5C400,7px 7px 0 #0C0C0C;}
+
+.l-mol    {color:#3A7FD4; text-shadow:2px 2px 0 #0C0C0C; letter-spacing:0.12em;}
+.l-dis    {color:#2ECC2E; text-shadow:3px 3px 0 #0A3A0A;}
+
+/* FRANJA "EL PAÍS DE LA BELLEZA" */
+.franja-orn{
+  background:#CC0018;padding:3px 0;
+  display:flex;align-items:center;justify-content:center;gap:16px;
+  flex-shrink:0;
+  border-top:3px solid #F0E530;border-bottom:3px solid #F0E530;
+  padding-left:12px;padding-right:12px;
+}
+.franja-orn .mano{
+  font-size:32px;color:#F0E530;line-height:1;
+  flex-shrink:0;
+}
+.franja-orn .lema{
+  font-family:'Montagu Slab',serif;font-weight:700;
+  font-size:11px;color:#F0E530;letter-spacing:0.1em;text-transform:uppercase;
+  text-align:center;flex:1;
+}
+
+/* INSTRUCCIONES */
+.instrucciones{
+  background:#F0E530;
+  padding:6px 14px 8px;
+  flex:1;
+  background-image:repeating-linear-gradient(45deg,transparent,transparent 8px,rgba(0,0,0,0.018) 8px,rgba(0,0,0,0.018) 9px);
+}
+.paso{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:2px solid #0C0C0C;}
+.paso:last-child{border-bottom:none;}
+.paso-num{font-family:'Montagu Slab',serif;font-weight:700;font-size:40px;line-height:1;min-width:44px;text-align:right;flex-shrink:0;}
+.n1{color:#CC0018;text-shadow:1px 1px 0 #8B0010;}
+.n2{color:#2ECC2E;text-shadow:1px 1px 0 #0A3A0A;}
+.n3{color:#3A7FD4;text-shadow:1px 1px 0 #1A4F9A;}
+.n4{color:#CC0018;text-shadow:1px 1px 0 #8B0010;}
+.paso-div{width:2.5px;align-self:stretch;background:#0C0C0C;flex-shrink:0;}
+.paso-txt{font-family:'Cozette',monospace;font-size:13px;color:#0C0C0C;text-transform:uppercase;letter-spacing:0.07em;line-height:1.5;}
+.paso-txt b{font-weight:700;color:#CC0018;font-family:'Montagu Slab',serif;}
+
+/* BANDERA */
+.bandera{display:flex;flex-shrink:0;height:14px;}
+.b-am{flex:2;background:#F5C400;}
+.b-az{flex:1;background:#003087;}
+.b-ro{flex:1;background:#CC0018;}
+
+/* BOTÓN */
+.boton{
+  background:#0C0C0C;padding:15px 14px 20px;
+  display:flex;align-items:flex-end;justify-content:space-between;
+  flex-shrink:0;cursor:pointer;border:none;width:100%;
+  position:relative;overflow:hidden;
+}
+.boton::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(-45deg,transparent,transparent 5px,rgba(255,255,255,0.02) 5px,rgba(255,255,255,0.02) 6px);pointer-events:none;}
+.boton:active{background:#1a0000;}
+.boton-label{font-family:'Montagu Slab',serif;font-weight:700;font-size:32px;color:#F0E530;text-transform:uppercase;line-height:0.92;text-shadow:2px 2px 0 #CC0018,4px 4px 0 #8B0010;position:relative;z-index:1;text-align:left;}
+.boton-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;position:relative;z-index:1;}
+.boton-flecha{font-family:'Montagu Slab',serif;font-size:48px;color:#CC0018;line-height:1;text-shadow:2px 2px 0 #8B0010;}
+.boton-sub{font-family:'Cozette',monospace;font-size:9px;color:#F0E530;letter-spacing:0.2em;text-transform:uppercase;opacity:0.5;}
+
+/* AR */
+#ar-container{position:fixed;inset:0;z-index:100;display:none;}
+#ar-hud{position:fixed;inset:0;z-index:200;pointer-events:none;display:none;}
+#ar-status{position:absolute;top:0;left:0;right:0;background:rgba(12,12,12,0.92);border-bottom:2px solid #CC0018;font-family:'Cozette',monospace;font-size:11px;color:#F0E530;letter-spacing:0.2em;text-transform:uppercase;text-align:center;padding:10px 20px;}
+#ar-status.ok{color:#2ECC2E;border-bottom-color:#2ECC2E;}
+#aim-msg{position:absolute;top:60px;left:50%;transform:translateX(-50%);font-family:'Cozette',monospace;font-size:11px;color:#F0E530;letter-spacing:0.18em;text-transform:uppercase;text-align:center;line-height:1.8;opacity:0.7;white-space:nowrap;pointer-events:none;}
+
+/* COMPARTIR */
+#share-panel{position:fixed;bottom:0;left:0;right:0;z-index:300;display:none;flex-direction:column;background:#0C0C0C;border-top:3px solid #CC0018;pointer-events:all;}
+.share-label{font-family:'Cozette',monospace;font-size:9px;color:#F0E530;letter-spacing:0.3em;text-transform:uppercase;opacity:0.4;padding:10px 16px 6px;}
+.btn-x{display:flex;align-items:center;justify-content:center;gap:16px;padding:14px 16px 24px;background:transparent;border:none;color:#F0E530;cursor:pointer;text-decoration:none;width:100%;}
+.btn-x:hover{background:#111;}
+.btn-x:disabled{opacity:0.5;cursor:wait;}
+.btn-x .x-left{display:flex;align-items:center;gap:14px;}
+.btn-x .x-sym{font-family:'Montagu Slab',serif;font-weight:700;font-size:26px;color:#F0E530;line-height:1;}
+.btn-x .x-label{font-family:'Montagu Slab',serif;font-weight:700;font-size:24px;color:#F0E530;text-transform:uppercase;line-height:1;}
+.btn-x .x-flecha{font-family:'Montagu Slab',serif;font-size:24px;color:#CC0018;}
+.bandera-share{display:flex;height:8px;}
+
+#btn-cerrar{position:fixed;top:14px;right:14px;z-index:400;display:none;background:rgba(12,12,12,0.9);border:1px solid #444;color:#F0E530;font-family:'Cozette',monospace;font-size:10px;letter-spacing:0.15em;padding:8px 12px;cursor:pointer;text-transform:uppercase;pointer-events:all;}
+#btn-cerrar:hover{border-color:#F0E530;}
+</style>
+</head>
+<body>
+
+<div id="intro">
+  <div class="cab">
+    <span class="orn-top">☆ ☆ ☆ &nbsp; COLOMBIA &nbsp; ☆ ☆ ☆</span>
+    <span class="titulo-linea l-revo" id="l1">REVOLUCIÓN</span>
+    <span class="titulo-linea l-mol"   id="l3">— MOLECULAR —</span>
+    <span class="titulo-linea l-dis"   id="l4">★ DISIPADA ★</span>
+  </div>
+
+  <div class="franja-orn">
+    <span class="mano">☛</span>
+    <span class="lema">EL PAÍS DE LA BELLEZA</span>
+    <span class="mano">☚</span>
+  </div>
+
+  <div class="instrucciones">
+    <div class="paso">
+      <div class="paso-num n1">1</div>
+      <div class="paso-div"></div>
+      <div class="paso-txt">Acepta el<br><b>permiso de cámara</b></div>
+    </div>
+    <div class="paso">
+      <div class="paso-num n2">2</div>
+      <div class="paso-div"></div>
+      <div class="paso-txt">Apunta al<br><b>cuadro físico</b></div>
+    </div>
+    <div class="paso">
+      <div class="paso-num n3">3</div>
+      <div class="paso-div"></div>
+      <div class="paso-txt"><b>El video cobra vida</b><br>sobre el cuadro</div>
+    </div>
+    <div class="paso">
+      <div class="paso-num n4">4</div>
+      <div class="paso-div"></div>
+      <div class="paso-txt">Comparte<br><b>en X</b></div>
+    </div>
+  </div>
+
+  <div class="bandera">
+    <div class="b-am"></div>
+    <div class="b-az"></div>
+    <div class="b-ro"></div>
+  </div>
+
+  <button class="boton" onclick="startAR()">
+    <span class="boton-label">ACTIVAR<br>CÁMARA</span>
+    <div class="boton-right">
+      <span class="boton-flecha">→</span>
+      <span class="boton-sub">toca para comenzar</span>
+    </div>
+  </button>
+</div>
+
+<!-- AR -->
+<div id="ar-container">
+  <a-scene id="ar-scene"
+    mindar-image="imageTargetSrc: ./assets/targets.mind; autoStart: false; uiLoading: no; uiScanning: no; uiError: no;"
+    color-space="sRGB" renderer="colorManagement: true"
+    vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+    <a-assets>
+      <video id="ar-video" src="./assets/video.mp4" preload="auto"
+        loop="false" webkit-playsinline playsinline crossorigin="anonymous"></video>
+    </a-assets>
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+    <a-entity mindar-image-target="targetIndex: 0">
+      <a-video src="#ar-video" position="0 0 0.001" width="1" height="1.6"></a-video>
+    </a-entity>
+  </a-scene>
+</div>
+
+<div id="ar-hud">
+  <div id="ar-status">Buscando imagen...</div>
+  <div id="aim-msg">Apunta al cuadro físico</div>
+</div>
+
+<div id="share-panel">
+  <span class="share-label">Compartir</span>
+  <button class="btn-x" id="btn-share-x" onclick="shareVideo()">
+    <div class="x-left">
+      <span class="x-sym">𝕏</span>
+      <span class="x-label" id="share-label-txt">Compartir video</span>
+    </div>
+    <span class="x-flecha">→</span>
+  </button>
+  <div class="bandera-share">
+    <div class="b-am" style="flex:2"></div>
+    <div class="b-az" style="flex:1"></div>
+    <div class="b-ro" style="flex:1"></div>
+  </div>
+</div>
+
+<button id="btn-cerrar" onclick="closeAR()">✕ cerrar</button>
+
+<script>
+const CONFIG = {
+  shareText: "Acabo de experimentar 'Revolución Molecular Disipada' — arte político en realidad aumentada. #RevoluciónMolecularDisipada #ArtePolítico #Colombia",
+  shareURL:  "https://TU-USUARIO.github.io/ar-obra",
+};
+
+/* ── TIPOGRAFÍA QUE LLENA EL ANCHO ───────────────────────
+   Mide el ancho del contenedor y escala cada línea hasta
+   que su texto ocupe exactamente ese ancho.
+─────────────────────────────────────────────────────── */
+function fitLineas() {
+  const cab = document.querySelector('.cab');
+  // ancho disponible = ancho cabecera menos padding
+  const estilos = window.getComputedStyle(cab);
+  const anchoDisp = cab.clientWidth
+    - parseFloat(estilos.paddingLeft)
+    - parseFloat(estilos.paddingRight);
+
+  const lineas = document.querySelectorAll('.titulo-linea');
+  lineas.forEach(el => {
+    // Empieza grande y baja hasta que quepa
+    let size = 120;
+    el.style.fontSize = size + 'px';
+    while (el.scrollWidth > anchoDisp && size > 8) {
+      size -= 1;
+      el.style.fontSize = size + 'px';
+    }
+  });
+}
+
+// Ejecutar cuando cargue la fuente y en resize
+document.fonts.ready.then(fitLineas);
+window.addEventListener('resize', fitLineas);
+
+/* ── AR ─────────────────────────────────────────────── */
+let videoPlaying = false;
+
+function startAR() {
+  document.getElementById('intro').style.display        = 'none';
+  document.getElementById('ar-container').style.display = 'block';
+  document.getElementById('ar-hud').style.display       = 'block';
+  document.getElementById('btn-cerrar').style.display   = 'block';
+  document.getElementById('share-panel').style.display  = 'flex';
+
+  const scene = document.getElementById('ar-scene');
+  scene.addEventListener('loaded', () => {
+    const sys = scene.systems['mindar-image-system'];
+    if (sys) sys.start();
+    setupEvents();
+  }, { once: true });
+}
+
+function setupEvents() {
+  const target  = document.querySelector('[mindar-image-target]');
+  const videoEl = document.getElementById('ar-video');
+  const status  = document.getElementById('ar-status');
+  const aimMsg  = document.getElementById('aim-msg');
+  const panel   = document.getElementById('share-panel');
+
+  target.addEventListener('targetFound', () => {
+    status.textContent = 'Imagen detectada';
+    status.classList.add('ok');
+    aimMsg.style.display = 'none';
+    if (!videoPlaying) {
+      videoEl.play().then(() => {
+        videoPlaying = true;
+        panel.style.display = 'flex';
+      }).catch(e => console.warn(e));
+    }
+  });
+
+  target.addEventListener('targetLost', () => {
+    status.textContent = 'Buscando imagen...';
+    status.classList.remove('ok');
+    aimMsg.style.display = 'block';
+    videoEl.pause();
+    videoPlaying = false;
+    panel.style.display = 'flex';
+  });
+
+  videoEl.addEventListener('ended', () => {
+    videoPlaying = false;
+    panel.style.display = 'flex';
+  });
+}
+
+function closeAR() {
+  try {
+    const sys = document.getElementById('ar-scene').systems['mindar-image-system'];
+    if (sys) sys.stop();
+  } catch(e) {}
+  document.getElementById('ar-video').pause();
+  ['ar-container','ar-hud','share-panel'].forEach(id =>
+    document.getElementById(id).style.display = 'none'
+  );
+  document.getElementById('btn-cerrar').style.display = 'none';
+  document.getElementById('intro').style.display = 'flex';
+  videoPlaying = false;
+}
+
+async function shareVideo() {
+  const btn = document.getElementById('btn-share-x');
+  const lbl = document.getElementById('share-label-txt');
+
+  // Si el navegador soporta Web Share API con archivos
+  if (navigator.canShare) {
+    try {
+      btn.disabled = true;
+      lbl.textContent = 'Preparando...';
+
+      const resp = await fetch('./assets/video.mp4');
+      const blob = await resp.blob();
+      const file = new File([blob], 'revolucion-molecular-disipada.mp4', { type: 'video/mp4' });
+
+      if (navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: 'Revolución Molecular Disipada',
+          text: CONFIG.shareText,
+        });
+        lbl.textContent = 'Compartir video';
+      } else {
+        // Puede compartir pero no archivos — fallback URL
+        await navigator.share({ title: 'Revolución Molecular Disipada', text: CONFIG.shareText, url: CONFIG.shareURL });
+        lbl.textContent = 'Compartir video';
+      }
+    } catch(e) {
+      lbl.textContent = 'Compartir video';
+      if (e.name !== 'AbortError') {
+        // Último fallback: descarga el video
+        const a = document.createElement('a');
+        a.href = './assets/video.mp4';
+        a.download = 'revolucion-molecular-disipada.mp4';
+        a.click();
+      }
+    } finally {
+      btn.disabled = false;
+    }
+  } else {
+    // Navegador sin Web Share API — descarga directa
+    const a = document.createElement('a');
+    a.href = './assets/video.mp4';
+    a.download = 'revolucion-molecular-disipada.mp4';
+    a.click();
+  }
+}
+</script>
+</body>
+</html>
