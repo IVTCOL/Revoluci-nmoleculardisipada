@@ -193,21 +193,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0C0C0C}
 </div>
 
 <!-- AR -->
-<div id="ar-container">
-  <a-scene id="ar-scene"
-    mindar-image="imageTargetSrc: ./assets/targets.mind; autoStart: false; uiLoading: no; uiScanning: no; uiError: no;"
-    color-space="sRGB" renderer="colorManagement: true"
-    vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
-    <a-assets>
-      <video id="ar-video" src="./assets/video.mp4" preload="auto"
-        loop="false" webkit-playsinline playsinline crossorigin="anonymous"></video>
-    </a-assets>
-    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-    <a-entity mindar-image-target="targetIndex: 0">
-      <a-video src="#ar-video" position="0 0 0.001" width="1" height="1.6"></a-video>
-    </a-entity>
-  </a-scene>
-</div>
+<div id="ar-container"></div>
 
 <div id="ar-hud">
   <div id="ar-status">Buscando imagen...</div>
@@ -281,51 +267,79 @@ window.addEventListener('resize', fitTitulo);
 let videoPlaying = false;
 
 async function startAR() {
-  // Pedir permiso y mostrar cámara
+  // 1. Pedir permiso de cámara explícitamente
   let stream;
   try {
-    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: 'environment' } },
+      audio: false
+    });
   } catch(err) {
-    alert('Se necesita permiso de cámara. Por favor acepta e intenta de nuevo.');
+    alert('Permiso de cámara denegado: ' + err.message);
     return;
   }
 
-  document.getElementById('intro').style.display        = 'none';
-  document.getElementById('ar-hud').style.display       = 'block';
-  document.getElementById('btn-cerrar').style.display   = 'block';
-  document.getElementById('share-panel').style.display  = 'flex';
+  // 2. Mostrar UI
+  document.getElementById('intro').style.display      = 'none';
+  document.getElementById('ar-hud').style.display     = 'block';
+  document.getElementById('btn-cerrar').style.display = 'block';
+  document.getElementById('share-panel').style.display = 'flex';
+  document.getElementById('ar-container').style.display = 'block';
 
-  // Verificar si targets.mind está disponible
+  // 3. Comprobar si targets.mind existe
   let targetsOk = false;
   try {
-    const check = await fetch('./assets/targets.mind', { method: 'HEAD' });
-    targetsOk = check.ok;
+    const r = await fetch('./assets/targets.mind', { method: 'HEAD' });
+    targetsOk = r.ok;
   } catch(e) {}
 
-  if (targetsOk) {
-    // AR completo con MindAR
-    stream.getTracks().forEach(t => t.stop()); // MindAR abre su propia cámara
-    document.getElementById('ar-container').style.display = 'block';
-    document.getElementById('ar-status').textContent = 'Buscando imagen...';
-    const scene = document.getElementById('ar-scene');
-    scene.addEventListener('loaded', () => {
-      const sys = scene.systems['mindar-image-system'];
-      if (sys) sys.start();
-      setupEvents();
-    }, { once: true });
-  } else {
-    // Modo preview: solo muestra la cámara sin AR
-    document.getElementById('ar-status').textContent = 'Cámara activa — falta targets.mind para AR';
+  if (!targetsOk) {
+    // MODO PREVIEW — cámara visible, sin AR
+    document.getElementById('ar-status').textContent = 'Cámara OK · Sube targets.mind para AR';
     document.getElementById('ar-status').style.color = '#F5C400';
-    const preview = document.createElement('video');
-    preview.srcObject = stream;
-    preview.autoplay = true;
-    preview.playsInline = true;
-    preview.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:99;';
-    document.body.appendChild(preview);
+    const vid = document.createElement('video');
+    vid.srcObject = stream;
+    vid.autoplay = true;
+    vid.playsInline = true;
+    vid.setAttribute('playsinline', '');
+    vid.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:99;background:#000;';
+    document.getElementById('ar-container').appendChild(vid);
     window._previewStream = stream;
-    window._previewEl = preview;
+    window._previewEl = vid;
+    return;
   }
+
+  // 4. MODO AR COMPLETO — liberar stream, dejar que MindAR abra la cámara
+  stream.getTracks().forEach(t => t.stop());
+  document.getElementById('ar-status').textContent = 'Cargando AR...';
+
+  // Inyectar a-scene dinámicamente
+  const container = document.getElementById('ar-container');
+  container.innerHTML = `
+    <a-scene
+      id="ar-scene"
+      mindar-image="imageTargetSrc:./assets/targets.mind;autoStart:false;uiLoading:no;uiScanning:no;uiError:no;"
+      color-space="sRGB"
+      renderer="colorManagement:true"
+      vr-mode-ui="enabled:false"
+      device-orientation-permission-ui="enabled:false">
+      <a-assets>
+        <video id="ar-video" src="./assets/video.mp4" preload="auto"
+          loop="false" webkit-playsinline playsinline crossorigin="anonymous"></video>
+      </a-assets>
+      <a-camera position="0 0 0" look-controls="enabled:false"></a-camera>
+      <a-entity mindar-image-target="targetIndex:0">
+        <a-video src="#ar-video" position="0 0 0.001" width="1" height="1.6"></a-video>
+      </a-entity>
+    </a-scene>`;
+
+  const scene = document.getElementById('ar-scene');
+  scene.addEventListener('loaded', () => {
+    const sys = scene.systems['mindar-image-system'];
+    if (sys) sys.start();
+    document.getElementById('ar-status').textContent = 'Buscando imagen...';
+    setupEvents();
+  }, { once: true });
 }
 
 function setupEvents() {
