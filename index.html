@@ -22,7 +22,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0C0C0C}
 .cab{
   background:#0C0C0C;
   padding:10px 10px 8px;
-  flex-shrink:0;
+  flex:1;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
   position:relative;
 }
 .cab::after{
@@ -77,23 +81,18 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0C0C0C}
 .instrucciones{
   background:#F0E530;
   padding:6px 14px 8px;
-  flex:1;
-  min-height:0;
-  overflow:hidden;
-  display:flex;
-  flex-direction:column;
-  justify-content:space-evenly;
+  flex-shrink:0;
   background-image:repeating-linear-gradient(45deg,transparent,transparent 8px,rgba(0,0,0,0.018) 8px,rgba(0,0,0,0.018) 9px);
 }
 .paso{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:2px solid #0C0C0C;}
 .paso:last-child{border-bottom:none;}
-.paso-num{font-family:'Montagu Slab',serif;font-weight:700;font-size:clamp(36px,8vh,64px);line-height:1;min-width:clamp(44px,8vw,72px);text-align:right;flex-shrink:0;}
+.paso-num{font-family:'Montagu Slab',serif;font-weight:700;font-size:40px;line-height:1;min-width:44px;text-align:right;flex-shrink:0;}
 .n1{color:#CC0018;text-shadow:1px 1px 0 #8B0010;}
 .n2{color:#2ECC2E;text-shadow:1px 1px 0 #0A3A0A;}
 .n3{color:#3A7FD4;text-shadow:1px 1px 0 #1A4F9A;}
 .n4{color:#CC0018;text-shadow:1px 1px 0 #8B0010;}
 .paso-div{width:2.5px;align-self:stretch;background:#0C0C0C;flex-shrink:0;}
-.paso-txt{font-family:'Cozette',monospace;font-size:clamp(12px,2vh,18px);color:#0C0C0C;text-transform:uppercase;letter-spacing:0.07em;line-height:1.5;}
+.paso-txt{font-family:'Cozette',monospace;font-size:13px;color:#0C0C0C;text-transform:uppercase;letter-spacing:0.07em;line-height:1.5;}
 .paso-txt b{font-weight:700;color:#CC0018;font-family:'Montagu Slab',serif;}
 
 /* BANDERA */
@@ -243,29 +242,40 @@ const CONFIG = {
    Mide el ancho del contenedor y escala cada línea hasta
    que su texto ocupe exactamente ese ancho.
 ─────────────────────────────────────────────────────── */
-function fitLineas() {
+function fitTitulo() {
   const cab = document.querySelector('.cab');
-  // ancho disponible = ancho cabecera menos padding
-  const estilos = window.getComputedStyle(cab);
-  const anchoDisp = cab.clientWidth
-    - parseFloat(estilos.paddingLeft)
-    - parseFloat(estilos.paddingRight);
-
   const lineas = document.querySelectorAll('.titulo-linea');
+  const estilos = window.getComputedStyle(cab);
+  const anchoDisp = cab.clientWidth - parseFloat(estilos.paddingLeft) - parseFloat(estilos.paddingRight);
+  // altura disponible para las líneas (cab - ornamento top - padding)
+  const ornH = document.querySelector('.orn-top').offsetHeight + 8;
+  const alturaDisp = cab.clientHeight - parseFloat(estilos.paddingTop) - parseFloat(estilos.paddingBottom) - ornH;
+  const numLineas = lineas.length;
+
+  // Paso 1: escalar cada línea al ancho
   lineas.forEach(el => {
-    // Empieza grande y baja hasta que quepa
-    let size = 120;
+    let size = 200;
     el.style.fontSize = size + 'px';
     while (el.scrollWidth > anchoDisp && size > 8) {
       size -= 1;
       el.style.fontSize = size + 'px';
     }
   });
+
+  // Paso 2: si el bloque total excede la altura, reducir uniformemente
+  let totalH = 0;
+  lineas.forEach(el => totalH += el.offsetHeight);
+  if (totalH > alturaDisp && alturaDisp > 0) {
+    const ratio = alturaDisp / totalH;
+    lineas.forEach(el => {
+      const cur = parseFloat(el.style.fontSize);
+      el.style.fontSize = Math.floor(cur * ratio) + 'px';
+    });
+  }
 }
 
-// Ejecutar cuando cargue la fuente y en resize
-document.fonts.ready.then(fitLineas);
-window.addEventListener('resize', fitLineas);
+document.fonts.ready.then(fitTitulo);
+window.addEventListener('resize', fitTitulo);
 
 /* ── AR ─────────────────────────────────────────────── */
 let videoPlaying = false;
